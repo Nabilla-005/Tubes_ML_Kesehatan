@@ -16,24 +16,36 @@ export function DiabetesDetection() {
     age: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mockPrediction = {
-      disease: "Diabetes",
-      detected: Math.random() > 0.5,
-      probability: Math.floor(Math.random() * 40) + 60,
-      confidence: Math.floor(Math.random() * 15) + 85,
-      recommendations: [
-        "Kontrol kadar gula darah secara teratur",
-        "Konsultasi dengan dokter endokrinologi",
-        "Atur pola makan rendah gula dan karbohidrat",
-        "Lakukan aktivitas fisik minimal 30 menit per hari",
-        "Monitor tekanan darah dan kolesterol",
-      ],
-    };
+    const response = await fetch("http://127.0.0.1:5000/predict/diabetes", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(formData),
+});
 
-    setPrediction(mockPrediction);
+const result = await response.json();
+
+setPrediction({
+  disease: result.disease,
+  detected: result.detected,
+  probability: result.confidence,
+  confidence: result.confidence,
+  recommendations: result.detected
+    ? [
+        "Kontrol gula darah secara rutin",
+        "Kurangi konsumsi gula",
+        "Lakukan olahraga teratur",
+      ]
+    : [
+        "Pertahankan pola hidup sehat",
+        "Lakukan pemeriksaan rutin",
+      ],
+});
+
     setIsModalOpen(true);
   };
 
@@ -54,10 +66,18 @@ export function DiabetesDetection() {
             <p className="text-red-200">Diabetes Mellitus Prediction System</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-red-200">
+        <div className="space-y-2 text-red-200">
+        <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5" />
-          <span>AI Model menggunakan algoritma Support Vector Machine (SVM)</span>
+          <span>
+            AI Model menggunakan algoritma K-Nearest Neighbors (KNN)
+          </span>
         </div>
+
+        <p className="text-sm text-red-100/80 leading-relaxed">
+          Masukkan data sesuai hasil pemeriksaan medis atau rentang kondisi tubuh Anda.
+        </p>
+      </div>
       </div>
 
       {/* Form */}
@@ -75,10 +95,14 @@ export function DiabetesDetection() {
               value={formData.pregnancies}
               onChange={handleChange}
               min="0"
+              max="20"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan jumlah"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+  Rentang umum: 0 - 20
+</p>
           </div>
 
           <div>
@@ -90,10 +114,14 @@ export function DiabetesDetection() {
               name="glucose"
               value={formData.glucose}
               onChange={handleChange}
+              min="50"
+              max="300"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan nilai"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 70 - 180 mg/dL   </p>
           </div>
 
           <div>
@@ -105,10 +133,14 @@ export function DiabetesDetection() {
               name="bloodPressure"
               value={formData.bloodPressure}
               onChange={handleChange}
+              min="40"
+max="200"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan nilai"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 60 - 140   </p>
           </div>
 
           <div>
@@ -120,10 +152,14 @@ export function DiabetesDetection() {
               name="skinThickness"
               value={formData.skinThickness}
               onChange={handleChange}
+              min="0"
+max="100"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan nilai"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 10 - 50   </p>
           </div>
 
           <div>
@@ -135,10 +171,14 @@ export function DiabetesDetection() {
               name="insulin"
               value={formData.insulin}
               onChange={handleChange}
+              min="0"
+max="900"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan nilai"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum:15 - 276   </p>
           </div>
 
           <div>
@@ -151,10 +191,14 @@ export function DiabetesDetection() {
               name="bmi"
               value={formData.bmi}
               onChange={handleChange}
+              min="10"
+max="70"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
               placeholder="Masukkan nilai BMI"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 18.5 - 30   </p>
           </div>
 
           <div>
@@ -167,10 +211,14 @@ export function DiabetesDetection() {
               name="diabetesPedigree"
               value={formData.diabetesPedigree}
               onChange={handleChange}
+              min="0"
+max="3"
               className="w-full px-4 py-3 rounded-xl bg-slate-700/50 border border-cyan-500/30 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
-              placeholder="Masukkan nilai (0-2)"
+              placeholder="Masukkan nilai"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 0.0 - 2.5  </p>
           </div>
 
           <div>
@@ -188,6 +236,8 @@ export function DiabetesDetection() {
               placeholder="Masukkan umur"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">
+    Rentang umum: 1 - 120 </p>
           </div>
         </div>
 
@@ -239,7 +289,7 @@ export function DiabetesDetection() {
             <div>
               <h4 className="text-white font-bold mb-2">Akurasi Model</h4>
               <p className="text-slate-300 text-sm">
-                Model AI kami mencapai akurasi 96.5% dalam memprediksi risiko diabetes
+                Model AI kami mencapai akurasi 82% dalam memprediksi risiko diabetes
                 berdasarkan dataset medis yang tervalidasi.
               </p>
             </div>

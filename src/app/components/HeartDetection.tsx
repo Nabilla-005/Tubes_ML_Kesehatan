@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Heart, AlertCircle, CheckCircle2, Sparkles, Activity } from "lucide-react";
+import {
+  Heart,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  Activity,
+} from "lucide-react";
 import { PredictionResultModal } from "./PredictionResultModal";
 
 export function HeartDetection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prediction, setPrediction] = useState<any>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     age: "",
     gender: "",
@@ -21,29 +28,52 @@ export function HeartDetection() {
     thalassemia: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mockPrediction = {
-      disease: "Penyakit Jantung",
-      detected: Math.random() > 0.5,
-      probability: Math.floor(Math.random() * 40) + 60,
-      confidence: Math.floor(Math.random() * 15) + 85,
-      recommendations: [
-        "Konsultasi dengan dokter spesialis jantung segera",
-        "Lakukan pemeriksaan EKG dan echocardiogram",
-        "Kontrol tekanan darah dan kolesterol secara teratur",
-        "Kurangi konsumsi lemak jenuh dan garam",
-        "Olahraga ringan seperti jalan kaki 30 menit setiap hari",
-        "Kelola stres dengan meditasi atau yoga",
-      ],
-    };
+    try {
+      const response = await fetch("http://127.0.0.1:5000/predict-heart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-    setPrediction(mockPrediction);
-    setIsModalOpen(true);
+        body: JSON.stringify({
+          age: Number(formData.age),
+          sex: Number(formData.gender),
+          cp: Number(formData.chestPainType),
+          trestbps: Number(formData.restingBloodPressure),
+          chol: Number(formData.cholesterol),
+          fbs: Number(formData.fastingBloodSugar),
+          restecg: Number(formData.restingECG),
+          thalach: Number(formData.maxHeartRate),
+          exang: Number(formData.exerciseAngina),
+          oldpeak: Number(formData.oldpeak),
+          slope: Number(formData.stSlope),
+          ca: Number(formData.numVessels),
+          thal: Number(formData.thalassemia),
+        }),
+      });
+
+      const result = await response.json();
+
+      setPrediction({
+        disease: "Penyakit Jantung",
+        detected: result.prediction.includes("Terindikasi"),
+        confidence: result.confidence,
+      });
+
+      setConfidence(result.confidence);
+
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -57,19 +87,26 @@ export function HeartDetection() {
             <div className="absolute inset-0 rounded-2xl bg-rose-400/30 animate-ping" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-white">Deteksi Penyakit Jantung</h2>
+            <h2 className="text-3xl font-bold text-white">
+              Deteksi Penyakit Jantung
+            </h2>
             <p className="text-rose-200">Heart Disease Prediction Using AI</p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-rose-200">
           <Sparkles className="w-5 h-5" />
-          <span>AI Model menggunakan algoritma Support Vector Machine (SVM)</span>
+          <span>AI Model menggunakan algoritma Naive Bayes</span>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="rounded-2xl bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 p-8">
-        <h3 className="text-2xl font-bold text-white mb-6">Input Data Pemeriksaan</h3>
+      <form
+        onSubmit={handleSubmit}
+        className="rounded-2xl bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 p-8"
+      >
+        <h3 className="text-2xl font-bold text-white mb-6">
+          Input Data Pemeriksaan
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -185,8 +222,12 @@ export function HeartDetection() {
             >
               <option value="">Pilih hasil ECG</option>
               <option value="0">Normal</option>
-              <option value="1">ST-T Wave Abnormality (Kelainan Gelombang ST-T)</option>
-              <option value="2">Left Ventricular Hypertrophy (Hipertrofi Ventrikel Kiri)</option>
+              <option value="1">
+                ST-T Wave Abnormality (Kelainan Gelombang ST-T)
+              </option>
+              <option value="2">
+                Left Ventricular Hypertrophy (Hipertrofi Ventrikel Kiri)
+              </option>
             </select>
           </div>
 
@@ -304,21 +345,23 @@ export function HeartDetection() {
           </button>
           <button
             type="reset"
-            onClick={() => setFormData({
-              age: "",
-              gender: "",
-              chestPainType: "",
-              restingBloodPressure: "",
-              cholesterol: "",
-              fastingBloodSugar: "",
-              restingECG: "",
-              maxHeartRate: "",
-              exerciseAngina: "",
-              oldpeak: "",
-              stSlope: "",
-              numVessels: "",
-              thalassemia: "",
-            })}
+            onClick={() =>
+              setFormData({
+                age: "",
+                gender: "",
+                chestPainType: "",
+                restingBloodPressure: "",
+                cholesterol: "",
+                fastingBloodSugar: "",
+                restingECG: "",
+                maxHeartRate: "",
+                exerciseAngina: "",
+                oldpeak: "",
+                stSlope: "",
+                numVessels: "",
+                thalassemia: "",
+              })
+            }
             className="px-8 py-4 rounded-xl bg-slate-700/50 text-white font-semibold hover:bg-slate-700 transition-all duration-300"
           >
             Reset
@@ -332,10 +375,13 @@ export function HeartDetection() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-blue-400 mt-1" />
             <div>
-              <h4 className="text-white font-bold mb-2">Tentang Penyakit Jantung</h4>
+              <h4 className="text-white font-bold mb-2">
+                Tentang Penyakit Jantung
+              </h4>
               <p className="text-slate-300 text-sm">
-                Penyakit jantung adalah kondisi yang memengaruhi struktur dan fungsi jantung.
-                Deteksi dini sangat penting untuk mencegah komplikasi serius seperti serangan jantung.
+                Penyakit jantung adalah kondisi yang memengaruhi struktur dan
+                fungsi jantung. Deteksi dini sangat penting untuk mencegah
+                komplikasi serius seperti serangan jantung.
               </p>
             </div>
           </div>
@@ -347,8 +393,8 @@ export function HeartDetection() {
             <div>
               <h4 className="text-white font-bold mb-2">Akurasi Model</h4>
               <p className="text-slate-300 text-sm">
-                Model AI kami mencapai akurasi 95.8% dalam memprediksi risiko penyakit jantung
-                berdasarkan data klinis tervalidasi.
+                Model AI kami mencapai akurasi 95.8% dalam memprediksi risiko
+                penyakit jantung berdasarkan data klinis tervalidasi.
               </p>
             </div>
           </div>
@@ -363,8 +409,12 @@ export function HeartDetection() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-500/30">
-            <div className="text-rose-400 text-sm mb-1">Faktor Risiko Utama</div>
-            <div className="text-white font-bold">Kolesterol & Tekanan Darah</div>
+            <div className="text-rose-400 text-sm mb-1">
+              Faktor Risiko Utama
+            </div>
+            <div className="text-white font-bold">
+              Kolesterol & Tekanan Darah
+            </div>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30">
             <div className="text-blue-400 text-sm mb-1">Parameter Kritis</div>
@@ -372,7 +422,9 @@ export function HeartDetection() {
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30">
             <div className="text-green-400 text-sm mb-1">Tingkat Akurasi</div>
-            <div className="text-white font-bold">95.8% Accuracy</div>
+            <div className="text-white font-bold">
+              {confidence ? `${confidence}% Confidence` : "Waiting Prediction"}
+            </div>
           </div>
         </div>
       </div>

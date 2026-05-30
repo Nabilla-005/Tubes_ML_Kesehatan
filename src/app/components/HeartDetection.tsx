@@ -393,7 +393,7 @@ export function HeartDetection() {
             <div>
               <h4 className="text-white font-bold mb-2">Akurasi Model</h4>
               <p className="text-slate-300 text-sm">
-                Model AI kami mencapai akurasi 95.8% dalam memprediksi risiko
+                Model AI kami mencapai akurasi 80% dalam memprediksi risiko
                 penyakit jantung berdasarkan data klinis tervalidasi.
               </p>
             </div>
